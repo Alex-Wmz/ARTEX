@@ -19,6 +19,7 @@
 #   ARTEX_SKIP_NPM_CI=1               Skip npm ci while rebuilding the frontend.
 #   ARTEX_GOSUMDB=sum.golang.org      Go checksum database.
 set -euo pipefail
+export NEXT_TELEMETRY_DISABLED=1
 
 cd "$(cd "$(dirname "$0")" && pwd)"
 
@@ -183,6 +184,8 @@ package_binary() {
   fi
   cp -R skills "$package_root/"
   cp config.example.json "$package_root/"
+  cp LICENSE "$package_root/"
+  if [ -f LOCAL_SECURITY.md ]; then cp LOCAL_SECURITY.md "$package_root/"; fi
   if [ -f README.md ]; then cp README.md "$package_root/"; fi
   (cd "$ARTEX_PACKAGE_DIR" && zip -q -r -9 "$(basename "$archive")" "$(basename "$package_root")")
   rm -rf "$package_root"

@@ -215,6 +215,7 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 	}
 	boot := bootUpdateState()
 	out := map[string]any{
+		"updates_enabled": selfupdate.Enabled(),
 		"current":     current,
 		"mode":        mode,
 		"os":          runtime.GOOS,
@@ -223,6 +224,13 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 		"repo":        selfupdate.Repo,
 		"boot_notice": boot.Detail,
 		"rolled_back": boot.RolledBack,
+	}
+	if !selfupdate.Enabled() {
+		out["has_update"] = false
+		out["comparable"] = false
+		out["reason"] = "此 Fork 默认禁用上游检查与一键更新，以保留本地安全改动；请审阅源码后重新构建"
+		writeJSON(w, 200, out)
+		return
 	}
 
 	// 顶栏提示走缓存（默认）；用户点"检查更新"时带 force=1 强制回源。
@@ -268,6 +276,10 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 // 立刻返回 202，实际工作在后台 goroutine 上跑：整包下载可能要几分钟，
 // 挂在请求上会被反代超时掐断。进度走 /api/update/stream。
 func (s *Server) updateApply(w http.ResponseWriter, r *http.Request) {
+	if !selfupdate.Enabled() {
+		writeErr(w, http.StatusForbidden, "此 Fork 默认禁用上游一键更新")
+		return
+	}
 	current := BuildVersion
 
 	// 走缓存：确保装上的就是用户在界面上看到并确认的那个版本。
@@ -313,6 +325,10 @@ func (s *Server) updateApply(w http.ResponseWriter, r *http.Request) {
 
 // updateRollback 主动退回上一版本（换装前备份的 artex.old）。
 func (s *Server) updateRollback(w http.ResponseWriter, r *http.Request) {
+	if !selfupdate.Enabled() {
+		writeErr(w, http.StatusForbidden, "此 Fork 默认禁用二进制回滚；请使用已审阅的构建")
+		return
+	}
 	if _, running := updHub.snapshot(); running {
 		writeErr(w, 409, "更新正在进行中，无法回滚")
 		return

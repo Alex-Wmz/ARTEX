@@ -14,8 +14,7 @@ import (
 
 // 全局设置键（存在 settings 键值表里，无需建表）。
 const (
-	// settingNotifyEnabled 是推送总开关。默认开：它用于维护期一键止血，
-	// 而不是功能的启用条件——真正的启用条件是「有没有配渠道」。
+	// settingNotifyEnabled 是推送总开关，默认关闭，配置渠道后仍须主动启用。
 	settingNotifyEnabled = "notify_enabled"
 	// settingNotifyPublicBaseURL 是生成漏洞详情回链的外部访问地址
 	// （如 https://artex.example.com）。留空则消息里不带回链按钮。
@@ -491,7 +490,7 @@ func (n *Notifier) takeTokens(channelID int64, ratePerMin, want int, now time.Ti
 
 // enabled 读取总开关。
 func (n *Notifier) enabled() bool {
-	return n.pg.GetBool(settingNotifyEnabled, true)
+	return n.pg.GetBool(settingNotifyEnabled, false)
 }
 
 // publicBaseURL 返回回链用的外部地址，去掉尾部斜杠。

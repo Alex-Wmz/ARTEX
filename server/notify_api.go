@@ -134,7 +134,7 @@ func (s *Server) notifyMeta(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, 200, map[string]any{
 		"kinds":               kinds,
-		"enabled":             pg.GetBool(settingNotifyEnabled, true),
+		"enabled":             pg.GetBool(settingNotifyEnabled, false),
 		"public_base_url":     baseURL,
 		"digest_interval_min": digest,
 		"defaults": map[string]any{

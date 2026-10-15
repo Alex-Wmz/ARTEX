@@ -191,7 +191,7 @@ export function UpdateCard() {
           <DownloadIcon className="size-4" />
           版本与更新
         </CardTitle>
-        <CardDescription>从 GitHub 检查并安装新版本。更新会重启程序，正在运行的任务会被中断。</CardDescription>
+        <CardDescription>此 Fork 默认关闭上游更新，以保留本地安全改动。升级前请审阅源码并重新构建。</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -284,7 +284,7 @@ export function UpdateCard() {
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => check(false)} disabled={checking || busy || restarting}>
+          <Button variant="outline" size="sm" onClick={() => check(false)} disabled={checking || busy || restarting || info?.updates_enabled === false}>
             <RefreshCwIcon className={checking ? "size-4 animate-spin" : "size-4"} />
             检查更新
           </Button>
@@ -296,7 +296,7 @@ export function UpdateCard() {
             <DownloadIcon className="size-4" />
             {info?.has_update ? `更新到 ${info.latest}` : "立即更新"}
           </Button>
-          {info?.has_backup && (
+          {info?.has_backup && info.updates_enabled !== false && (
             <Button variant="ghost" size="sm" onClick={doRollback} disabled={busy || restarting}>
               <RotateCcwIcon className="size-4" />
               回滚到上一版本
