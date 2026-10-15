@@ -214,14 +214,14 @@ func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 	boot := bootUpdateState()
 	out := map[string]any{
 		"updates_enabled": selfupdate.Enabled(),
-		"current":     current,
-		"mode":        mode,
-		"os":          runtime.GOOS,
-		"arch":        runtime.GOARCH,
-		"has_backup":  selfupdate.HasBackup(),
-		"repo":        selfupdate.Repo,
-		"boot_notice": boot.Detail,
-		"rolled_back": boot.RolledBack,
+		"current":         current,
+		"mode":            mode,
+		"os":              runtime.GOOS,
+		"arch":            runtime.GOARCH,
+		"has_backup":      selfupdate.HasBackup(),
+		"repo":            selfupdate.Repo,
+		"boot_notice":     boot.Detail,
+		"rolled_back":     boot.RolledBack,
 	}
 	if !selfupdate.Enabled() {
 		out["has_update"] = false

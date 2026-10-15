@@ -23,9 +23,13 @@ func TestLocalSecurityToolDownloadPolicy(t *testing.T) {
 	t.Setenv("ARTEX_ALLOW_TOOL_DOWNLOADS", "")
 	t.Setenv("NORMA_RIPGREP_NO_INSTALL", "")
 	configureToolDownloads()
-	if os.Getenv("NORMA_RIPGREP_NO_INSTALL") != "1" { t.Fatal("automatic ripgrep download was not disabled") }
+	if os.Getenv("NORMA_RIPGREP_NO_INSTALL") != "1" {
+		t.Fatal("automatic ripgrep download was not disabled")
+	}
 	// Explicit permission does not erase an independent user prohibition.
 	t.Setenv("ARTEX_ALLOW_TOOL_DOWNLOADS", "1")
 	configureToolDownloads()
-	if os.Getenv("NORMA_RIPGREP_NO_INSTALL") != "1" { t.Fatal("explicit no-install setting was erased") }
+	if os.Getenv("NORMA_RIPGREP_NO_INSTALL") != "1" {
+		t.Fatal("explicit no-install setting was erased")
+	}
 }

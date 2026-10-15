@@ -10,7 +10,7 @@ func TestLocalSecurityManagementBoundary(t *testing.T) {
 	t.Setenv("ARTEX_ALLOW_REMOTE_ACCESS", "")
 	for _, tc := range []struct {
 		name, target, origin string
-		want int
+		want                 int
 	}{
 		{"local UI", "http://127.0.0.1:8787/api/auth/init", "http://127.0.0.1:8787", 200},
 		{"localhost", "http://localhost:8787/", "", 200},
@@ -30,7 +30,9 @@ func TestLocalSecurityManagementBoundary(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			}))
 			r := httptest.NewRequest(http.MethodPost, tc.target, nil)
-			if tc.origin != "" { r.Header.Set("Origin", tc.origin) }
+			if tc.origin != "" {
+				r.Header.Set("Origin", tc.origin)
+			}
 			w := httptest.NewRecorder()
 			h.ServeHTTP(w, r)
 			if w.Code != tc.want || called != (tc.want == 200) {
@@ -43,13 +45,18 @@ func TestLocalSecurityManagementBoundary(t *testing.T) {
 func TestLocalSecurityRemoteOptInKeepsOriginProtection(t *testing.T) {
 	t.Setenv("ARTEX_ALLOW_REMOTE_ACCESS", "1")
 	h := LocalAccess(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }))
-	for _, tc := range []struct { origin string; want int }{
+	for _, tc := range []struct {
+		origin string
+		want   int
+	}{
 		{"http://artex.test:8787", 200}, {"https://evil.test", 403},
 	} {
 		r := httptest.NewRequest(http.MethodPost, "http://artex.test:8787/api/auth/init", nil)
 		r.Header.Set("Origin", tc.origin)
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
-		if w.Code != tc.want { t.Fatalf("origin %s: %d, want %d", tc.origin, w.Code, tc.want) }
+		if w.Code != tc.want {
+			t.Fatalf("origin %s: %d, want %d", tc.origin, w.Code, tc.want)
+		}
 	}
 }
