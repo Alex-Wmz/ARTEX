@@ -677,15 +677,31 @@ func TestNotifyMetaAndSettingsRoundTrip(t *testing.T) {
 
 func TestLocalSecurityNotificationsDefaultOff(t *testing.T) {
 	f := newNotifyFixture(t)
-	if _, err := f.pg.Exec(`DELETE FROM settings WHERE key=$1`, settingNotifyEnabled); err != nil { t.Fatal(err) }
-	if f.n.enabled() { t.Fatal("unset notification switch must be off") }
-	if f.s.settingsPayload()["notify_enabled"] != false { t.Fatal("settings UI disagrees with notifier default") }
+	if _, err := f.pg.Exec(`DELETE FROM settings WHERE key=$1`, settingNotifyEnabled); err != nil {
+		t.Fatal(err)
+	}
+	if f.n.enabled() {
+		t.Fatal("unset notification switch must be off")
+	}
+	if f.s.settingsPayload()["notify_enabled"] != false {
+		t.Fatal("settings UI disagrees with notifier default")
+	}
 	r := f.request("GET", "/api/notify/meta", "")
-	var meta struct { Enabled bool `json:"enabled"` }
-	if err := json.Unmarshal(r.Body.Bytes(), &meta); err != nil { t.Fatal(err) }
-	if r.Code != 200 || meta.Enabled { t.Fatalf("unexpected notification metadata: %d %s", r.Code, r.Body) }
-	if err := f.pg.SetBool(settingNotifyEnabled, true); err != nil { t.Fatal(err) }
-	if !f.n.enabled() { t.Fatal("explicit notification opt-in must still work") }
+	var meta struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := json.Unmarshal(r.Body.Bytes(), &meta); err != nil {
+		t.Fatal(err)
+	}
+	if r.Code != 200 || meta.Enabled {
+		t.Fatalf("unexpected notification metadata: %d %s", r.Code, r.Body)
+	}
+	if err := f.pg.SetBool(settingNotifyEnabled, true); err != nil {
+		t.Fatal(err)
+	}
+	if !f.n.enabled() {
+		t.Fatal("explicit notification opt-in must still work")
+	}
 }
 
 // TestNotifyDeepLinkUsesPublicBaseURL 覆盖回链拼接：配了 public_base_url 时

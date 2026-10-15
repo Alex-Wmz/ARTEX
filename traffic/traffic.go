@@ -204,7 +204,7 @@ func Open(dir, addr string) (*Traffic, error) {
 	}
 
 	p, err := mproxy.NewProxy(&mproxy.Options{
-		Addr:        addr,
+		Addr: addr,
 		// Verify the destination certificate independently of the browser's
 		// trust in ARTEX's local MITM CA.
 		SslInsecure: false,

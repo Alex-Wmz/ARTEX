@@ -34,7 +34,9 @@ func TestLocalSecurityCertificateErrorsNeverEnablePassthrough(t *testing.T) {
 		tr := &Traffic{}
 		f := &mproxy.Flow{Request: &mproxy.Request{URL: &url.URL{Host: "protocol_error.test:443"}}}
 		tr.maybePassthrough(f, err)
-		if _, ok := tr.pass.Load("protocol_error.test"); ok { t.Fatalf("certificate error allowed passthrough: %v", err) }
+		if _, ok := tr.pass.Load("protocol_error.test"); ok {
+			t.Fatalf("certificate error allowed passthrough: %v", err)
+		}
 	}
 }
 

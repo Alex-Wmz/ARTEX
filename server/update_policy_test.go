@@ -25,8 +25,14 @@ func TestLocalSecurityDisabledUpdatesNeverFetch(t *testing.T) {
 	for _, path := range []string{"/api/update/check", "/api/update/check?force=1"} {
 		w := httptest.NewRecorder()
 		s.updateCheck(w, httptest.NewRequest(http.MethodGet, path, nil))
-		var out struct { UpdatesEnabled bool `json:"updates_enabled"`; HasUpdate bool `json:"has_update"`; Reason string `json:"reason"` }
-		if err := json.Unmarshal(w.Body.Bytes(), &out); err != nil { t.Fatal(err) }
+		var out struct {
+			UpdatesEnabled bool   `json:"updates_enabled"`
+			HasUpdate      bool   `json:"has_update"`
+			Reason         string `json:"reason"`
+		}
+		if err := json.Unmarshal(w.Body.Bytes(), &out); err != nil {
+			t.Fatal(err)
+		}
 		if w.Code != 200 || out.UpdatesEnabled || out.HasUpdate || out.Reason == "" {
 			t.Fatalf("unexpected disabled response: %d %s", w.Code, w.Body.String())
 		}
@@ -34,7 +40,11 @@ func TestLocalSecurityDisabledUpdatesNeverFetch(t *testing.T) {
 	for _, handler := range []http.HandlerFunc{s.updateApply, s.updateRollback} {
 		w := httptest.NewRecorder()
 		handler(w, httptest.NewRequest(http.MethodPost, "/api/update/apply", nil))
-		if w.Code != http.StatusForbidden { t.Fatalf("status=%d, want 403", w.Code) }
+		if w.Code != http.StatusForbidden {
+			t.Fatalf("status=%d, want 403", w.Code)
+		}
 	}
-	if calls != 0 { t.Fatalf("disabled updates made %d release queries", calls) }
+	if calls != 0 {
+		t.Fatalf("disabled updates made %d release queries", calls)
+	}
 }
