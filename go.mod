@@ -2,6 +2,9 @@ module github.com/Autumn-27/artex
 
 go 1.26.3
 
+// Keep the TLS verification/name fallback fix reviewable in this fork.
+replace github.com/lqqyt2423/go-mitmproxy => ./third_party/go-mitmproxy
+
 require (
 	mvdan.cc/sh/v3 v3.10.0
 	github.com/Autumn-27/norma v0.4.3

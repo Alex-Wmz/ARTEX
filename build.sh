@@ -185,6 +185,8 @@ package_binary() {
   cp -R skills "$package_root/"
   cp config.example.json "$package_root/"
   cp LICENSE "$package_root/"
+  mkdir -p "$package_root/licenses"
+  cp third_party/go-mitmproxy/LICENSE "$package_root/licenses/go-mitmproxy-LICENSE"
   if [ -f LOCAL_SECURITY.md ]; then cp LOCAL_SECURITY.md "$package_root/"; fi
   if [ -f README.md ]; then cp README.md "$package_root/"; fi
   (cd "$ARTEX_PACKAGE_DIR" && zip -q -r -9 "$(basename "$archive")" "$(basename "$package_root")")

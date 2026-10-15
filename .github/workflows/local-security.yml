@@ -44,6 +44,7 @@ jobs:
       - name: Review Go formatting
         run: |
           gofmt -d cmd/artex/main*.go selfupdate/policy*.go server/local_access*.go server/update*.go server/notifier.go server/notify_api*.go server/server.go traffic/traffic.go traffic/passthrough_test.go traffic/tls_security_test.go
+          gofmt -d third_party/go-mitmproxy/proxy/attacker.go
       - name: Proxy TLS and startup regression tests
         run: go test -count=1 ./traffic ./selfupdate ./config ./cmd/artex
       - name: Management, update and notification regression tests
