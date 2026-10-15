@@ -203,10 +203,8 @@ func (h *updateHub) subscribe() (<-chan updateProgress, func()) {
 
 // updateCheck 查询 GitHub 上的最新正式版并与当前版本比较。
 //
-// 前端也会直连 api.github.com（GitHub 的 CORS 是 *），但**以本接口为准**：
-// 下载是后端做的，只有后端能访问 GitHub 才谈得上更新。浏览器能连、服务器连不上
-// 的情况很常见（服务器在内网、或代理只配在浏览器上），那时点更新必然失败，
-// 不如在检查这一步就如实报错。
+// 前端通过本接口查询；默认仅返回本地禁用状态，不访问 GitHub。
+// 显式允许上游更新时，查询和下载均由后端完成。
 func (s *Server) updateCheck(w http.ResponseWriter, r *http.Request) {
 	current := BuildVersion
 	mode := "binary"
