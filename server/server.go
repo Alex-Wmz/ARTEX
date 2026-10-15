@@ -3395,7 +3395,7 @@ func (s *Server) settingsPayload() map[string]any {
 		"noa_compaction": s.m.NoaCompactionEnabled(),
 		// 漏洞 IM 推送的全局项。渠道本身是独立资源，走 /api/notify/* 管理；
 		// 这里只放「作用于全部渠道」的三项。
-		"notify_enabled":             s.m.pg.GetBool(settingNotifyEnabled, true),
+		"notify_enabled":             s.m.pg.GetBool(settingNotifyEnabled, false),
 		"notify_public_base_url":     notifyPublicBaseURL(s.m.pg),
 		"notify_digest_interval_min": notifyDigestIntervalMin(s.m.pg),
 	}

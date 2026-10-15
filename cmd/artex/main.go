@@ -52,11 +52,14 @@ func main() {
 
 func run() int {
 	var (
-		addr    = flag.String("addr", ":8787", "HTTP listen address")
+		addr    = flag.String("addr", "127.0.0.1:8787", "HTTP listen address (loopback by default)")
 		dataDir = flag.String("data", filepath.Join(config.BaseDir(), "data"), "data directory for SQLite stores (default: data/ next to the executable)")
 		proxy   = flag.String("proxy", "127.0.0.1:8788", "traffic recording proxy address (empty to disable)")
 	)
 	flag.Parse()
+	// Norma otherwise installs ripgrep with npm when rg is missing. An agent
+	// process must not silently download executable tools on first use.
+	configureToolDownloads()
 
 	// hand the build version to the server package so GET /api/health can report it
 	// to the frontend top bar.
@@ -72,10 +75,12 @@ func run() int {
 	// attempt and roll back if the new build keeps dying. Must run before we open
 	// the stores or bind a port — this may end with "exit and let the start script
 	// relaunch me", and there is no point paying for either first.
-	action, upState := selfupdate.Bootstrap()
-	server.SetBootUpdateState(upState)
-	if action == selfupdate.Restart {
-		return selfupdate.ExitRestart
+	if selfupdate.Enabled() {
+		action, upState := selfupdate.Bootstrap()
+		server.SetBootUpdateState(upState)
+		if action == selfupdate.Restart {
+			return selfupdate.ExitRestart
+		}
 	}
 
 	// surface which config file the binary reads (absolute, so `go run`'s relative
@@ -104,8 +109,10 @@ func run() int {
 	// Surviving this long means a freshly swapped-in build actually works, so drop
 	// the upgrade marker and stop counting attempts. Until it fires, every boot
 	// increments the count and a build that keeps dying gets rolled back.
-	settle := time.AfterFunc(selfupdate.SettleDelay, selfupdate.Settle)
-	defer settle.Stop()
+	if selfupdate.Enabled() {
+		settle := time.AfterFunc(selfupdate.SettleDelay, selfupdate.Settle)
+		defer settle.Stop()
+	}
 
 	skillDir := config.SkillDir()
 	if abs, err := filepath.Abs(skillDir); err == nil {
@@ -115,7 +122,7 @@ func run() int {
 	srv := server.New(ctx, mgr, skillDir, *dataDir, config.BaseDir())
 	httpSrv := &http.Server{
 		Addr:              *addr,
-		Handler:           srv.Handler(),
+		Handler:           server.LocalAccess(srv.Handler()),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
@@ -142,6 +149,12 @@ func run() int {
 	defer cancel()
 	_ = httpSrv.Shutdown(shutdownCtx)
 	return code
+}
+
+func configureToolDownloads() {
+	if os.Getenv("ARTEX_ALLOW_TOOL_DOWNLOADS") != "1" {
+		_ = os.Setenv("NORMA_RIPGREP_NO_INSTALL", "1")
+	}
 }
 
 // shutdownContext deliberately does not derive from signalCtx. If it did, the

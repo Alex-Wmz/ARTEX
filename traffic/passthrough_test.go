@@ -1,7 +1,10 @@
 package traffic
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
+	"fmt"
 	"net/url"
 	"testing"
 
@@ -18,6 +21,20 @@ func TestHostOnly(t *testing.T) {
 		if got := hostOnly(in); got != want {
 			t.Errorf("hostOnly(%q)=%q want %q", in, got, want)
 		}
+	}
+}
+
+func TestLocalSecurityCertificateErrorsNeverEnablePassthrough(t *testing.T) {
+	for _, err := range []error{
+		&tls.CertificateVerificationError{Err: errors.New("protocol error")},
+		x509.UnknownAuthorityError{},
+		fmt.Errorf("protocol error: %w", x509.HostnameError{Certificate: &x509.Certificate{}, Host: "protocol_error.test"}),
+		errors.New("protocol error: x509: certificate signed by unknown authority"),
+	} {
+		tr := &Traffic{}
+		f := &mproxy.Flow{Request: &mproxy.Request{URL: &url.URL{Host: "protocol_error.test:443"}}}
+		tr.maybePassthrough(f, err)
+		if _, ok := tr.pass.Load("protocol_error.test"); ok { t.Fatalf("certificate error allowed passthrough: %v", err) }
 	}
 }
 

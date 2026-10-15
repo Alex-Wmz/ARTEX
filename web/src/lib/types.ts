@@ -979,7 +979,7 @@ export interface Settings {
   // 之后启动的 run 生效。
   noa_compaction?: boolean;
   // ---- 漏洞 IM 推送（渠道本身是独立资源，见 /api/notify/*，这里只有三项全局配置）----
-  notify_enabled?: boolean; // 推送总开关，默认开；用于维护期一键止血
+  notify_enabled?: boolean; // 推送总开关，默认关闭，需主动启用
   notify_public_base_url?: string; // 漏洞详情回链的外部访问地址；空=消息不带回链
   notify_digest_interval_min?: number; // 汇总模式周期（分钟），默认 30
 }
@@ -1613,6 +1613,7 @@ export interface FindingTrafficDetail {
 
 /** GET /api/update/check —— 当前版本与 GitHub 最新正式版的比较结果。 */
 export interface UpdateCheck {
+  updates_enabled?: boolean;
   /** 当前运行的版本；开发构建为 "dev" 或 git describe 的带后缀形式。 */
   current: string;
   /** 运行形态。docker 下换装只作用于容器可写层，重建容器会退回镜像版本。 */
