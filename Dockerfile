@@ -11,6 +11,7 @@
 #   CGO_ENABLED=0 GOARCH=amd64 go build -tags embedui -o dist/amd64/artex ./cmd/artex
 #   docker build -t artex:local .
 FROM python:3.12-slim-bookworm
+ENV NEXT_TELEMETRY_DISABLED=1 NORMA_RIPGREP_NO_INSTALL=1
 ARG TARGETARCH
 # 常用工具：ripgrep / curl / vim，加一批 recon 常备件（按需增删）。
 # Node 从 NodeSource 装 22.x，与前端构建使用的主版本一致。
@@ -32,6 +33,8 @@ RUN npm install -g @playwright/mcp@latest @playwright/cli@latest playwright@late
 WORKDIR /app
 # 预编译好的对应架构二进制（dist/amd64/artex 或 dist/arm64/artex）
 COPY dist/${TARGETARCH}/artex /app/artex
+COPY LICENSE /app/LICENSE
+COPY third_party/go-mitmproxy/LICENSE /app/licenses/go-mitmproxy-LICENSE
 # 守护启动脚本：进程退出后按退出码决定是否重新拉起，页面一键更新靠它完成换装。
 # 它同时负责把 SIGTERM 转发给 artex —— docker stop 只把信号发给 PID 1，
 # 不转发的话 artex 收不到、做不了优雅关闭，10 秒后被 SIGKILL 硬杀。

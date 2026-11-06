@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
@@ -202,8 +204,10 @@ func Open(dir, addr string) (*Traffic, error) {
 	}
 
 	p, err := mproxy.NewProxy(&mproxy.Options{
-		Addr:        addr,
-		SslInsecure: true,
+		Addr: addr,
+		// Verify the destination certificate independently of the browser's
+		// trust in ARTEX's local MITM CA.
+		SslInsecure: false,
 		CaRootPath:  filepath.Join(dir, "_ca"),
 	})
 	if err != nil {
@@ -421,7 +425,20 @@ func (t *Traffic) maybePassthrough(f *mproxy.Flow, err error) {
 // proxyCausedErr reports whether err indicates the interception layer (not the
 // target) is at fault — HTTP/2 handling, HEAD-with-body, or a protocol violation.
 func proxyCausedErr(err error) bool {
+	// Certificate failures must never become a reason to retry through a raw
+	// tunnel. Check typed errors before text heuristics: a certificate's host
+	// name or diagnostic can itself contain words such as "protocol error".
+	var verification *tls.CertificateVerificationError
+	var unknown x509.UnknownAuthorityError
+	var hostname x509.HostnameError
+	var invalid x509.CertificateInvalidError
+	if errors.As(err, &verification) || errors.As(err, &unknown) || errors.As(err, &hostname) || errors.As(err, &invalid) {
+		return false
+	}
 	s := strings.ToLower(err.Error())
+	if strings.Contains(s, "x509:") || strings.Contains(s, "certificate") {
+		return false
+	}
 	for _, p := range []string{"head request", "http2", "http/2", "protocol error", "protocol_error", "malformed"} {
 		if strings.Contains(s, p) {
 			return true

@@ -11,6 +11,8 @@ AI 自主渗透测试系统（Go 后端 + Next.js 前端）
 
 本仓库为独立维护的 [RuoJi6/ARTEX](https://github.com/RuoJi6/ARTEX)，保留 https://github.com/Autumn-27/ARTEX 的原始提交历史与 AGPL-3.0 许可证。程序发布包从本仓库 Releases 下载，Docker 镜像 [ruoji6/artex](https://hub.docker.com/r/ruoji6/artex) 由本仓库 GitHub Actions 构建并发布。
 
+> **Alex-Wmz 本机加固分支**：本 Fork 保留上述上游说明与许可；部署请先读 [本机使用加固说明](LOCAL_SECURITY.md)。下文原版下载、自动安装和镜像说明属于上游流程，不包含本分支的安全修改。本分支默认仅本机访问、验证代理上游证书、关闭上游更新和工具自动下载；Compose 要求先构建本地镜像，不再自动拉取上游成品。
+
 ---
 
 ## 截图预览
